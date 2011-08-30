@@ -12,6 +12,7 @@ package regex;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -78,7 +79,7 @@ public class GUI extends javax.swing.JFrame {
         gridBagConstraints.gridy = 0;
         getContentPane().add(labelRegex, gridBagConstraints);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Optiuni"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Options"));
 
         cMultiline.setText("MULTILINE");
         cMultiline.addActionListener(new java.awt.event.ActionListener() {
@@ -121,7 +122,7 @@ public class GUI extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 10, 10);
         getContentPane().add(jPanel1, gridBagConstraints);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Metode"));
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Methods"));
 
         bgMetode.add(rMatches);
         rMatches.setText("matches");
@@ -161,7 +162,7 @@ public class GUI extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 10, 10);
         getContentPane().add(jPanel2, gridBagConstraints);
 
-        bAplica.setText("Aplica");
+        bAplica.setText("Do it!");
         bAplica.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bAplicaActionPerformed(evt);
@@ -232,12 +233,12 @@ public class GUI extends javax.swing.JFrame {
     private void bAplicaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bAplicaActionPerformed
 
         if (fieldRegex.getText().trim().equals("")) {
-            taOutput.setText("Niciun regex specificat.");
+            JOptionPane.showMessageDialog(this, "No regex.", "Error", JOptionPane.ERROR_MESSAGE);;
             return;
         }
 
         if (taInput.getText().trim().equals("")) {
-            taOutput.setText("Niciun input specificat.");
+            JOptionPane.showMessageDialog(this, "No input.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -250,43 +251,61 @@ public class GUI extends javax.swing.JFrame {
             opts |= Pattern.CASE_INSENSITIVE;
         if (cDotAll.isSelected())
             opts |= Pattern.DOTALL;
-
-        Pattern p = Pattern.compile(fieldRegex.getText().trim(), opts);
-        Matcher m  = p.matcher(taInput.getText());
-
-        if (rMatches.isSelected()) {
-            if (m.matches())
-                out = "Matches: true";
-            else
-                out = "Matches: false";
+        
+        Pattern p = null;
+        try {
+            p = Pattern.compile(fieldRegex.getText().trim(), opts);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Wrong regex", "Error", JOptionPane.ERROR_MESSAGE);
         }
+    
+        if (p != null) {
+            Matcher m  = p.matcher(taInput.getText());
 
-        else if (rLookingAt.isSelected()) {
-            if (m.lookingAt())
-                out = "LookingAt: true";
-            else
-                out = "LookingAt: false";
-        }
+            if (rMatches.isSelected()) {
+                if (m.matches())
+                    out = "Matches: true";
+                else
+                    out = "Matches: false";
+            }
 
-        else if (rFind.isSelected()) {
-            int i;
-            int n;
-            out = "";
-            while(m.find()) {
-                n = m.groupCount();
-                out += "Match: " + m.group() + "\n";
-                for (i = 1; i <= n; ++i) {
-                    out += i + ": " + m.group(i);
+            else if (rLookingAt.isSelected()) {
+                if (m.lookingAt())
+                    out = "LookingAt: true";
+                else
+                    out = "LookingAt: false";
+            }
+
+            else if (rFind.isSelected()) {
+                int i;
+                int n;
+                int count = 0;
+                out = "";
+                
+                
+                while(m.find()) {
+                    ++count;
+                    if (m.group().equals(""))
+                        continue;
+                    n = m.groupCount();
+                    out += "Match: " + m.group() + "\n";
+                    for (i = 1; i <= n; ++i) {
+                        out += i + ": " + m.group(i);
+                        out += "\n";
+                    }
                     out += "\n";
                 }
-                out += "\n";
+                if (count == 0)
+                    out = "Nothing found.";
             }
+
+            else {
+                out = "";
+                JOptionPane.showMessageDialog(this, "No method chosen.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+            taOutput.setText(out);
         }
-
-        else
-            out = "Nicio metoda aleasa.";
-
-        taOutput.setText(out);
     }//GEN-LAST:event_bAplicaActionPerformed
 
     /**
